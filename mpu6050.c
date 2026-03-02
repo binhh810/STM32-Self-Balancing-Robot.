@@ -42,21 +42,15 @@ uint8_t MPU6050_Init(I2C_HandleTypeDef *I2Cx) {
 
     if (check == 104)  // 0x68 will be returned by the sensor if everything goes well
     {
-        // power management register 0X6B we should write all 0's to wake the sensor up
         Data = 0;
         HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, PWR_MGMT_1_REG, 1, &Data, 1, i2c_timeout);
 
-        // Set DATA RATE of 1KHz by writing SMPLRT_DIV register
         Data = 0x07;
         HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, SMPLRT_DIV_REG, 1, &Data, 1, i2c_timeout);
 
-        // Set accelerometer configuration in ACCEL_CONFIG Register
-        // XA_ST=0,YA_ST=0,ZA_ST=0, FS_SEL=0 -> � 2g
         Data = 0x00;
         HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, ACCEL_CONFIG_REG, 1, &Data, 1, i2c_timeout);
 
-        // Set Gyroscopic configuration in GYRO_CONFIG Register
-        // XG_ST=0,YG_ST=0,ZG_ST=0, FS_SEL=0 -> � 250 �/s
         Data = 0x00;
         HAL_I2C_Mem_Write(I2Cx, MPU6050_ADDR, GYRO_CONFIG_REG, 1, &Data, 1, i2c_timeout);
         return 0;
@@ -76,10 +70,6 @@ void MPU6050_Read_Accel(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct) {
     DataStruct->Accel_Y_RAW = (int16_t) (Rec_Data[2] << 8 | Rec_Data[3]);
     DataStruct->Accel_Z_RAW = (int16_t) (Rec_Data[4] << 8 | Rec_Data[5]);
 
-    /*** convert the RAW values into acceleration in 'g'
-         we have to divide according to the Full scale value set in FS_SEL
-         I have configured FS_SEL = 0. So I am dividing by 16384.0
-         for more details check ACCEL_CONFIG Register              ****/
 
     DataStruct->Ax = DataStruct->Accel_X_RAW / 16384.0;
     DataStruct->Ay = DataStruct->Accel_Y_RAW / 16384.0;
@@ -98,10 +88,6 @@ void MPU6050_Read_Gyro(I2C_HandleTypeDef *I2Cx, MPU6050_t *DataStruct) {
     DataStruct->Gyro_Y_RAW = (int16_t) (Rec_Data[2] << 8 | Rec_Data[3]);
     DataStruct->Gyro_Z_RAW = (int16_t) (Rec_Data[4] << 8 | Rec_Data[5]);
 
-    /*** convert the RAW values into dps (�/s)
-         we have to divide according to the Full scale value set in FS_SEL
-         I have configured FS_SEL = 0. So I am dividing by 131.0
-         for more details check GYRO_CONFIG Register              ****/
 
     DataStruct->Gx = DataStruct->Gyro_X_RAW / 131.0;
     DataStruct->Gy = DataStruct->Gyro_Y_RAW / 131.0;
